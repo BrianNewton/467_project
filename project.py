@@ -49,17 +49,57 @@ for i in range(0, 5):
 B_matrix = np.imag(Y_bus)
 G_matrix = np.real(Y_bus)
 
+B_prime = (-1)*np.delete(B_matrix, 2, 1)
+B_prime = np.delete(B_prime, 2, 0)
+
+B_prime_prime = np.delete(B_prime, 0, 1)
+B_prime_prime = np.delete(B_prime_prime, 0, 0)
+B_prime_prime = np.delete(B_prime_prime, 0, 1)
+B_prime_prime = np.delete(B_prime_prime, 0, 0)
 
 # Setting bus data
-bus_1 = Bus("PV", 1.05, None, 0.9, None, 0, 0)
-bus_1.set_gen(300, 8, 0.0015, 150, 50, 150, -150)
+buses = []
 
-bus_2 = Bus("Slack", 1.05, 0, None, None, 0, 0)
-bus_2.set_gen(450, 8, 0.0005, 200, 50, 150, -150)
+#bus 1
+buses.append(Bus("PV", 1.05, None, 0.9, None, 0, 0))
+buses[0].set_gen(300, 8, 0.0015, 150, 50, 150, -150)
 
-bus_3 = Bus("PV", 1.05, None, 0.6, None, 0, 0)
-bus_3.set_gen(700, 7.5, 0.001, 100, 30, 150, -150)
+#bus 2
+buses.append(Bus("Slack", 1.05, 0, None, None, 0, 0))
+buses[1].set_gen(450, 8, 0.0005, 200, 50, 150, -150)
 
-bus_4 = Bus("PQ", None, None, 0, 0, 0.9, 0.6)
-bus_5 = Bus("PQ", None, None, 0, 0, 1, 0.7)
-bus_6 = Bus("PQ", None, None, 0, 0, 0.9, 0.6)
+#bus 3
+buses.append(Bus("PV", 1.05, None, 0.6, None, 0, 0))
+buses[2].set_gen(700, 7.5, 0.001, 100, 30, 150, -150)
+
+#bus 4
+buses.append(Bus("PQ", None, None, 0, 0, 0.9, 0.6))
+
+#bus 5
+buses.append(Bus("PQ", None, None, 0, 0, 1, 0.7))
+
+#bus 6
+buses.append(Bus("PQ", None, None, 0, 0, 0.9, 0.6))
+
+#1
+
+
+#2
+
+
+#3
+
+
+#4
+
+
+#5
+
+
+#6
+
+
+#7
+
+
+#8
