@@ -1,6 +1,7 @@
 import gurobipy as gp
+from gurobipy import GRB
 import numpy as np
-
+import scipy as sp
 
 
 class Bus:
@@ -82,7 +83,22 @@ buses.append(Bus("PQ", None, None, 0, 0, 1, 0.7))
 buses.append(Bus("PQ", None, None, 0, 0, 0.9, 0.6))
 
 #1
+p1 = gp.Model("DC Load Flow without generation limits")
+P = p1.addMVar(shape=5, name="P 1x5 vector")
+Delta = p1.addMVar(shape=5, name="Delta 1x5 vector")
 
+B_prime_inv = np.linalg.inv(B_prime)
+
+obj = 300 + 450 + 700 + 8*P[0] + 8*P[1] + 7.5*P[2] + 0.0015*P[0]**2 + 0.0005*P[1]**2 + 0.001*P[2]**2
+p1.setObjective(obj, GRB.MINIMIZE)
+
+p1.addConstr(B_prime_inv @ P == Delta)
+
+p1.optimize()
+
+print('Optimization Complete. Objective function value: %.2f' % p1.objVal)
+for v in p1.getVars():
+    print('%s: %g' % (v.varName, v.x))
 
 #2
 
