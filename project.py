@@ -1,5 +1,6 @@
 import gurobipy as gp
 from gurobipy import GRB
+import math
 import numpy as np
 import scipy as sp
 
@@ -24,19 +25,19 @@ class Bus:
         self.Qg_min = Qg_min
 
 # [bus i][bus j][impedance/susceptance]
-TLs = [[[0,0],              [0.1+0.2j, 0.04j],      [0,0],                  [0.05+0.2j, 0.04j], [0.08+0.3j, 0.06j],     [0,0]],
+TLs = np.matrix([[[0,0],              [0.1+0.2j, 0.04j],      [0,0],                  [0.05+0.2j, 0.04j], [0.08+0.3j, 0.06j],     [0,0]],
        [[0.1+0.2j, 0.04j],  [0,0],                  [0.05+0.25j, 0.06j],    [0.05+0.1j, 0.02j], [0.1+0.3j, 0.04j],      [0.07+0.2j, 0.05j]],
        [[0,0],              [0.05+0.25j, 0.06j],    [0,0],                  [0,0],              [0.12+0.26j, 0.05j],    [0.02+0.1j, 0.02j]],
        [[0.05+0.2j, 0.04j], [0.05+0.1j, 0.02j],     [0,0],                  [0,0],              [0.2+0.4j, 0.08j],      [0,0]],
        [[0.08+0.3j, 0.06j], [0.1+0.3j, 0.04j],      [0.12+0.26j, 0.05j],    [0.2+0.4j, 0.08j],  [0,0],                  [0.1+0.3j, 0.06j]],
-       [[0,0],              [0.07+0.2j, 0.05j],     [0.02+0.1j, 0.02j],     [0,0],              [0.1+0.3j, 0.06j],      [0,0]]]
+       [[0,0],              [0.07+0.2j, 0.05j],     [0.02+0.1j, 0.02j],     [0,0],              [0.1+0.3j, 0.06j],      [0,0]]])
 
-Y_bus = [[0, 0, 0, 0, 0, 0],
+Y_bus = np.matrix([[0, 0, 0, 0, 0, 0],
          [0, 0, 0, 0, 0, 0],
          [0, 0, 0, 0, 0, 0],
          [0, 0, 0, 0, 0, 0],
          [0, 0, 0, 0, 0, 0],
-         [0, 0, 0, 0, 0, 0]]
+         [0, 0, 0, 0, 0, 0]])
 
 
 # Building Y_bus, B matrix and G matrix
@@ -105,6 +106,60 @@ for v in p1.getVars():
 
 #3
 
+B_prime_FDLF = [[0, 0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0, 0]]
+
+B_prime_prime_FDLF = [[0, 0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0, 0]]
+
+
+for i in range(0, 6):
+    for j in range(0, 5):
+        B_prime_FDLF[i][j] = -1/(np.imag(TLs[i][j]))
+
+B_prime_prime_FDLF = -B_matrix
+
+P_sps = [0, 0, 0, 0, 0, 0]
+Q_sps = [0, 0, 0, 0, 0, 0]
+Delta_P = [0, 0, 0, 0, 0, 0]
+Delta_Q = [0, 0, 0, 0, 0, 0]
+Delta_D = [0, 0, 0, 0, 0, 0]
+Delta_V = [0, 0, 0, 0, 0, 0]
+
+
+buses_Q3 = buses
+
+while(True):
+
+    for i in range(len(buses_Q3)):
+        if buses_Q3[i].V_pu == 0:
+            buses_Q3[i].V_pu = 1
+        if buses_Q3[i].angle == 0:
+            buses_Q3[i].angle = 0
+        P_sps[i] = buses_Q3[i].Pg_pu - buses_Q3[i].Pl_pu
+        Q_sps[i] = buses_Q3[i].Qg_pu - buses_Q3[i].Ql_pu
+
+        if buses_Q3[i].type == "PV":
+            x = 0
+            for j in range(len(buses_Q3)):
+                x = x + buses_Q3[j]*(G_matrix[i][j]*math.cos(buses_Q3[i].angle - buses_Q3[j].angle) + B_matrix[i][j]*math.sin(buses_Q3[i].angle - buses_Q3[j].angle))
+            Delta_P[i] = P_sps[i] - buses_Q3[i].V_pu * x
+        
+        if buses_Q3[i].type == "PQ":
+            x = 0
+            for j in range(len(buses_Q3)):
+                x = x + buses_Q3[j]*(G_matrix[i][j]*math.sin(buses_Q3[i].angle - buses_Q3[j].angle) + B_matrix[i][j]*math.cos(buses_Q3[i].angle - buses_Q3[j].angle))
+            Delta_Q[i] = Q_sps[i] - buses_Q3[i].V_pu * x
+
+    Delta_D = 
 
 #4
 
